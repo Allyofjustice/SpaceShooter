@@ -15,8 +15,11 @@ public:
 	void getScore();
 
 private:
+	const int SHOOT_CD = 10;
+	const int PLAYER_HEALTH = 10;
+	const int MAX_X_SPEED = 10;
+	const int MAX_Y_SPEED = 10;
 	int score;
-	const int SHOOT_CD = 0;
 	int frames = 0;
 };
 

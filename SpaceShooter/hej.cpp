@@ -1,5 +1,7 @@
 #include "SDL.h"
 #include "SDL_image.h"
+#include <SDL_mixer.h>
+
 #include "Sprite.h"
 #include "GameEngine.h"
 #include <iostream>
@@ -10,11 +12,16 @@
 #include "Background.h"
 int main(int argc, char* args[]) { 
 	
-	SDL_Surface* ship = IMG_Load("ship1.png");
+	SDL_Surface* ship = IMG_Load("paintShip.png");
+	SDL_SetColorKey(ship, SDL_SRCCOLORKEY, SDL_MapRGB(ship->format, 0xFF, 0xFF, 0xFF));
+	
+	Mix_Chunk *gScratch = NULL;
 
 	SDL_Surface* rustled = IMG_Load("jimmy.jpg");
 	SDL_Surface* rustled2 = IMG_Load("jimmy.jpg");
+
 	SDL_Surface* rock = IMG_Load("rock.jpg");
+	SDL_SetColorKey(rock, SDL_TRUE, SDL_MapRGB(rock->format, 0xFF, 0xFF, 0xFF));
 
 	SDL_Surface* spaceBg = IMG_Load("poorSpace.png");
 	//SDL_Surface* hehe = IMG_Load("hehe.jpg");

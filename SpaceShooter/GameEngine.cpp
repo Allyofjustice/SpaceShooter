@@ -3,6 +3,7 @@
 #include <vector>
 #include <list>
 #include "SDL_ttf.h"
+#include <SDL_mixer.h>
 #include <string>
 #include <sstream>
 using namespace std;
@@ -18,55 +19,83 @@ GameEngine::GameEngine(int width, int height, std::vector<Sprite*> gameObjects, 
 };
 
 void GameEngine::init(){
-	SDL_Init(SDL_INIT_EVERYTHING);
+	//SDL_INIT_EVERYTHING?
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) 
+		printf("SDL could not initialize! SDL Error: %s\n", SDL_GetError());
+	
 	TTF_Init();
+	
+	if(Mix_OpenAudio( 44100, MIX_DEFAULT_FORMAT, 2, 2048 ) < 0 ) { 
+		printf( "SDL_mixer could not initialize! SDL_mixer Error: %s\n"); 
+	}
+
+	music = Mix_LoadMUS("Saturnine.wav");
+	Mix_PlayMusic(music, -1);
+
 	gameScreen = SDL_SetVideoMode(width, height, 32, SDL_SWSURFACE);
 	textColor = { 255, 255, 255 };
-	SDL_WM_SetCaption("Space game", NULL);
+	SDL_WM_SetCaption("Space Meme", NULL);
 	font = TTF_OpenFont("lazy.ttf", 58);
 	sort();
 }
 void GameEngine::run(){
 	init();
+	mainMenu();
 
 	MyTimer fpsTimer;
 	MyTimer frameTimer;
 	int frames = 0;
-	fpsTimer.start();
-	
 	quit = false;
 	gameOver = false;
-	while (!quit && !gameOver){
+	fpsTimer.start();
 
+	while (!quit && !gameOver){
 		frameTimer.start();
 		checkCollisions();
-		player1->handleInput(event, &collisionObjects);
+		handleInput();
 		update();
 		removeDead();
 
 		if (player1->getHealth() <= 0){
 			gameOver = true;
 		}
-		
 		draw();
-		
 		if (SDL_PollEvent(&event)){
 			if (event.type == SDL_QUIT){
 				quit = true;
 			}
-		}	
-		
-		frames++;
-		cout << "FPS: " << frames / (fpsTimer.getTicks() / 1000.f) << endl;
-		
-		if ( frameTimer.getTicks() < TICKS_PER_FRAME)
+		}
+		if (frameTimer.getTicks() < TICKS_PER_FRAME) //cap the fps to 60
 			SDL_Delay(TICKS_PER_FRAME - frameTimer.getTicks());
-
+		frames++;
+		
+		currentFPS = 1 / (frameTimer.getTicks() / 1000.f);
 		frameTimer.stop();
+		
 	}//while
 
 	cleanup();
 };
+
+void GameEngine::pause(){
+	//while ()
+}
+
+void GameEngine::handleInput(){
+	player1->handleInput(event, &collisionObjects);
+	/*
+	if (event.type == SDL_KEYDOWN){
+		switch (event.key.keysym.sym){
+		case SDLK_P: setYspd(0); break;
+		case SDLK_DOWN:setYspd(0); break;
+		case SDLK_LEFT:setXspd(0); break;
+		case SDLK_RIGHT: setXspd(0); break;
+
+
+		}
+	}
+	*/
+}
 void  GameEngine::update(){
 
 	for (unsigned i = 0; i < collisionObjects.size(); i++){
@@ -91,13 +120,22 @@ void GameEngine::draw(){
 	for (unsigned i = 0; i < collisionObjects.size(); i++){
 		collisionObjects.at(i)->draw(gameScreen);
 	}
-
-	strLife << "Life: " << player1->getHealth();
+	
+	playerHealth = player1->getHealth();
+	strLife << "Health: " << playerHealth;
+	SDL_FreeSurface(message); // Removes the old message before making the new
 	message = TTF_RenderText_Solid(font, strLife.str().c_str(), textColor);
 	offset.x = 10; offset.y = 10;
 	SDL_BlitSurface(message, NULL, gameScreen, &offset);
 	strLife.str(""); //Tömmer strömmen
 
+	stringstream fps;
+	fps << currentFPS;
+	SDL_FreeSurface(message); // Removes the old message before making the new
+	message = TTF_RenderText_Solid(font, fps.str().c_str(), textColor);
+	offset.x = 1000; offset.y = 10;
+	SDL_BlitSurface(message, NULL, gameScreen, &offset);
+	
 	if (gameOver){
 		message = TTF_RenderText_Solid(font, "Game over", textColor);
 		offset.x = 500; offset.y = 360;
@@ -153,9 +191,14 @@ void GameEngine::removeDead(){
 
 void GameEngine::cleanup(){
 
-	//SDL_FreeSurface();
+	//Free music   we call Mix_FreeChunk() to get rid of the sound effects and Mix_FreeMusic() to free the music.
+	Mix_FreeMusic(music);
+
+	//Free surfaces
 	SDL_FreeSurface(message);
 	SDL_FreeSurface(gameScreen);
+
+	Mix_CloseAudio();
 	TTF_CloseFont( font ); 
 	TTF_Quit();
 	SDL_Quit();
@@ -165,3 +208,26 @@ void GameEngine::cleanup(){
 bool GameEngine::getQuit(){
 	return quit;
 }
+
+void GameEngine::mainMenu(){
+	SDL_Surface* screen = IMG_Load("mainMenu.png");
+	SDL_Rect offset;
+	offset.x = 0; offset.y = 0;
+	SDL_BlitSurface(screen, NULL, gameScreen, &offset);
+	SDL_Flip(gameScreen);
+
+	Uint8 *keystates = SDL_GetKeyState(NULL);
+
+	bool quit = false;
+	while (!quit){
+		if (SDL_PollEvent(&event)){
+			if (event.type == SDL_QUIT)
+				quit = true;
+			
+			if (event.key.keysym.sym == SDLK_RETURN)
+				quit = true;
+			
+		}
+	}
+	
+} 

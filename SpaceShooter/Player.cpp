@@ -3,7 +3,7 @@
 
 Player::Player(int xx, int yy, SDL_Surface* img) : SolidSprite(xx, yy, img){
 	setAttack(1);
-	setHealth(2);
+	setHealth(PLAYER_HEALTH);
 	setBadGuy(false);
 	
 }
@@ -40,26 +40,35 @@ void shoot(bool activated){
 */
 void Player::handleInput(SDL_Event event, std::vector<SolidSprite*> *gameObjects){
 	frames++;
-	if (event.type == SDL_KEYDOWN) {
-		switch (event.key.keysym.sym){
-		case SDLK_UP: setYspd(-4); break;
-		case SDLK_DOWN:setYspd(4); break;
-		case SDLK_LEFT:setXspd(-4); break;
-		case SDLK_RIGHT: setXspd(4); break;
-		case SDLK_SPACE:
-			if (frames >= SHOOT_CD){
-				SDL_Surface* bulletImg = IMG_Load("bullet1.png");
-				SolidSprite* bullet = new SolidSprite(getX(), getY(), bulletImg, 4, 0, 1, getAttack());
-				bullet->setBadGuy(false);
-				gameObjects->push_back(bullet);
-				std::cout << "En kula" << std::endl;
-				frames = 0;
-				break;
-			}
-		}
+	
+	Uint8 *keystates = SDL_GetKeyState(NULL);
+	if (keystates[SDLK_UP])
+		setYspd(MAX_Y_SPEED * -1); 
+	else if (keystates[SDLK_DOWN])
+		setYspd(MAX_Y_SPEED);
+	else
+		setYspd(0);
+	
+	if (keystates[SDLK_LEFT])
+		setXspd(MAX_X_SPEED * -1);
+	else if (keystates[SDLK_RIGHT])
+		setXspd(MAX_X_SPEED);
+	else
+		setXspd(0);
+		
+	if (keystates[SDLK_SPACE]){
+		if (frames >= SHOOT_CD){
+			SDL_Surface* bulletImg = IMG_Load("bullet1.png");
+			SDL_SetColorKey(bulletImg, SDL_SRCCOLORKEY, SDL_MapRGB(bulletImg->format, 0xFF, 0xFF, 0xFF));
 
+			SolidSprite* bullet = new SolidSprite(getX(), getY(), bulletImg, 30, 0, 1, getAttack());
+			bullet->setBadGuy(false);
+			gameObjects->push_back(bullet);
+			frames = 0;
+		}
 	}
-	else if (event.type == SDL_KEYUP){
+	/*
+	if (event.type == SDL_KEYUP){
 		switch (event.key.keysym.sym){
 		case SDLK_UP: setYspd(0); break;
 		case SDLK_DOWN:setYspd(0); break;
@@ -69,7 +78,7 @@ void Player::handleInput(SDL_Event event, std::vector<SolidSprite*> *gameObjects
 		
 		}
 	}
-
+	*/
 }
 
 void Player::collides(SolidSprite* other){
