@@ -7,6 +7,7 @@ Sprite::Sprite(int xx, int yy, SDL_Surface* img){
 }
 
 Sprite::~Sprite(void){
+	std::cout << "remove object" << std::endl;
 	SDL_FreeSurface(image);
 }
 

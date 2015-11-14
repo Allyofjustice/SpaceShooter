@@ -11,7 +11,7 @@
 #include "SmartEnemy.h"
 #include "Background.h"
 int main(int argc, char* args[]) { 
-	
+	/*
 	SDL_Surface* ship = IMG_Load("paintShip.png");
 	SDL_SetColorKey(ship, SDL_SRCCOLORKEY, SDL_MapRGB(ship->format, 0xFF, 0xFF, 0xFF));
 	
@@ -54,6 +54,8 @@ int main(int argc, char* args[]) {
 	delete rock1;
 	
 	
+	
+	*/
 	return 0;
 }
 

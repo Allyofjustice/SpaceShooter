@@ -21,6 +21,7 @@ public:
 	void setDead(bool dead);
 	bool isBadGuy();
 	void setBadGuy(bool isBad);
+	void attack(SolidSprite *other);
 
 protected:
 	
@@ -28,7 +29,8 @@ protected:
 	
 private:
 	bool badGuy;
-	int attack = 0;
+	int armor = 0;
+	int attackValue = 0;
 	int health = 1;
 	bool dead = false;
 	

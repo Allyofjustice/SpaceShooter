@@ -9,7 +9,7 @@ SolidSprite::SolidSprite(int xx, int yy, SDL_Surface* img, int xSpeed, int ySpee
 	setXspd(xSpeed);
 	setYspd(ySpeed);
 	this->health = health;
-	attack = atk;
+	attackValue = atk;
 }
 
 SolidSprite::~SolidSprite(void){
@@ -50,11 +50,11 @@ SDL_Rect SolidSprite::getHitBox(){
 }
 
 int SolidSprite::getAttack(){
-	return attack;
+	return attackValue;
 }
 
 void SolidSprite::setAttack(int newAttack){
-	attack = newAttack;
+	attackValue = newAttack;
 }
 
 int SolidSprite::getHealth(){
@@ -79,4 +79,9 @@ bool SolidSprite::isBadGuy(){
 
 void SolidSprite::setBadGuy(bool isBad){
 	badGuy = isBad;
+}
+
+//Reduce the health of the attacked object by the current object's attack value
+void SolidSprite::attack(SolidSprite *other){
+	other->health -= attackValue;
 }

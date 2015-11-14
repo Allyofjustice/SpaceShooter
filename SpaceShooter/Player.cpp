@@ -1,28 +1,30 @@
 #include "Player.h"
 #include <iostream>
 
-Player::Player(int xx, int yy, SDL_Surface* img) : SolidSprite(xx, yy, img){
+Player::Player(int xx, int yy, int screenWidth, int screenHeight, SDL_Surface* img) : SolidSprite(xx, yy, img){
 	setAttack(1);
 	setHealth(PLAYER_HEALTH);
 	setBadGuy(false);
-	
+	this->screenWidth = screenWidth; //Width of the window
+	this->screenHeight = screenHeight; //height of the window
+
+	shootSound = Mix_LoadWAV("laser1.wav");
 }
 
 Player::~Player(void)
 {
 }
 
+//TODO ta bort hårdkodning av fönsterdimensioner
 void Player::update(){
-	//ändra till hitbox?
-	if (getHealth() <= 0)
-		std::cout << "GAME OVER YEAAH";
-	else{
+	//Only update if player is alive
+	if (getHealth() > 0){
 		
-		//Ser till att spelaren inte åker ut från vänster/höger kant.
-		if (x + image->w >= 1280 && getXspd() > 0 || x <= 0 && getXspd() < 0)
+		//If the player is outside of left or right border : Remove the x-speed
+		if (x + image->w >= screenWidth && getXspd() > 0 || x <= 0 && getXspd() < 0)
 			setXspd(getXspd() - getXspd());
 		//Top/down
-		if (y + image->h >= 720 && getYspd() > 0 || y <= 0 && getYspd() < 0)
+		if (y + image->h >= screenHeight && getYspd() > 0 || y <= 0 && getYspd() < 0)
 			setYspd(getYspd() - getYspd());
 		
 		setX(getX() + getXspd());
@@ -38,7 +40,7 @@ void shoot(bool activated){
 	std::cout << "En kula" << std::endl;
 }
 */
-void Player::handleInput(SDL_Event event, std::vector<SolidSprite*> *gameObjects){
+void Player::handleInput(std::vector<SolidSprite*> *objectContainer){
 	frames++;
 	
 	Uint8 *keystates = SDL_GetKeyState(NULL);
@@ -60,25 +62,15 @@ void Player::handleInput(SDL_Event event, std::vector<SolidSprite*> *gameObjects
 		if (frames >= SHOOT_CD){
 			SDL_Surface* bulletImg = IMG_Load("bullet1.png");
 			SDL_SetColorKey(bulletImg, SDL_SRCCOLORKEY, SDL_MapRGB(bulletImg->format, 0xFF, 0xFF, 0xFF));
-
 			SolidSprite* bullet = new SolidSprite(getX(), getY(), bulletImg, 30, 0, 1, getAttack());
 			bullet->setBadGuy(false);
-			gameObjects->push_back(bullet);
+			objectContainer->push_back(bullet);
+
+			Mix_PlayChannel(-1, shootSound, 0); //Play laser sound while shooting
+
 			frames = 0;
 		}
 	}
-	/*
-	if (event.type == SDL_KEYUP){
-		switch (event.key.keysym.sym){
-		case SDLK_UP: setYspd(0); break;
-		case SDLK_DOWN:setYspd(0); break;
-		case SDLK_LEFT:setXspd(0); break;
-		case SDLK_RIGHT: setXspd(0); break;
-
-		
-		}
-	}
-	*/
 }
 
 void Player::collides(SolidSprite* other){
